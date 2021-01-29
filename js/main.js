@@ -8,11 +8,21 @@ let capturedImg = zip.folder("images");
 let canvas;
 
 function captureImg() {
-	canvas.toBlob(function (blob) {
-		let fn = `${frameCount}`.padStart(3, "0");
-		capturedImg.file(`${fn}.jpg`, blob);
-		console.log(`saved img ${fn}...`);
-	});
+	canvas.toBlob(
+		function (blob) {
+			let fn = `${frameCount}`.padStart(3, "0");
+			capturedImg.file(`${fn}.jpg`, blob);
+			console.log(`saved img ${fn}...`);
+			buffer.filter(BLUR, 3 + (frameCount / 100) * 6);
+			if (frameCount == 100) {
+				saveZip();
+			} else {
+				redraw();
+			}
+		},
+		"image/jpeg",
+		0.6
+	);
 }
 
 function saveZip() {
@@ -27,16 +37,15 @@ function preload() {
 
 function setup() {
 	createCanvas(500, 500);
+	noLoop();
 	canvas = document.getElementById("defaultCanvas0");
 	c0 = color(20);
 	c1 = color(235);
 	buffer = createGraphics(500, 500);
 	original = createGraphics(500, 500);
-	// setGradient(original, 0, 0, width, height, c0, c1);
-	// setGradient(buffer, 0, 0, width, height, c0, c1);
 	original.image(img, 0, 0, width, height);
 	buffer.image(img, 0, 0, width, height);
-	frameRate(1);
+	redraw();
 }
 
 function getRandomInt(min, max) {
@@ -92,31 +101,4 @@ function draw() {
 	buffer.rect(0, 0, width, height);
 	shuffleAndPrintImage(frameCount, buffer, false);
 	captureImg();
-	if (frameCount == 101) {
-		saveZip();
-		noLoop();
-	}
-	buffer.filter(BLUR, 5);
-}
-
-function setGradient(buffer, x, y, w, h, c1, c2, axis = Y_AXIS) {
-	noFill();
-
-	if (axis === Y_AXIS) {
-		// Top to bottom gradient
-		for (let i = y; i <= y + h; i++) {
-			let inter = map(Math.pow(i / (y + h), 2), 0, 1, 0, 1);
-			let c = lerpColor(c1, c2, inter);
-			buffer.stroke(c);
-			buffer.line(x, i, x + w, i);
-		}
-	} else if (axis === X_AXIS) {
-		// Left to right gradient
-		for (let i = x; i <= x + w; i++) {
-			let inter = map(i, x, x + w, 0, 1);
-			let c = lerpColor(c1, c2, inter);
-			buffer.stroke(c);
-			buffer.line(i, y, i, y + h);
-		}
-	}
 }
