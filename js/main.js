@@ -2,12 +2,32 @@ const Y_AXIS = 1,
 	X_AXIS = 2;
 let c0, c1, buffer, original, img;
 
+let zip = new JSZip();
+let capturedImg = zip.folder("images");
+
+let canvas;
+
+function captureImg() {
+	canvas.toBlob(function (blob) {
+		let fn = `${frameCount}`.padStart(3, "0");
+		capturedImg.file(`${fn}.jpg`, blob);
+		console.log(`saved img ${fn}...`);
+	});
+}
+
+function saveZip() {
+	zip.generateAsync({ type: "blob" }).then(function (content) {
+		saveAs(content, "images.zip");
+	});
+}
+
 function preload() {
 	img = loadImage("pic.png");
 }
 
 function setup() {
 	createCanvas(500, 500);
+	canvas = document.getElementById("defaultCanvas0");
 	c0 = color(20);
 	c1 = color(235);
 	buffer = createGraphics(500, 500);
@@ -26,7 +46,6 @@ function getRandomInt(min, max) {
 }
 
 function shuffleAndPrintImage(n, buffer, grid = true) {
-	console.log(`image #${n}`);
 	let swaps = n + 1, //;Math.max(1, Math.ceil(Math.pow(n - 1, 2)));
 		size = Math.round(width / n);
 
@@ -69,14 +88,15 @@ function shuffleAndPrintImage(n, buffer, grid = true) {
 }
 
 function draw() {
-	// buffer.fill((1 - frameCount / 100) * 255, (frameCount / 100) * 255);
 	buffer.fill(0, 16);
 	buffer.rect(0, 0, width, height);
-	// buffer.image(img, 0, 0);
-	shuffleAndPrintImage(frameCount, buffer);
-	if (frameCount == 100) {
+	shuffleAndPrintImage(frameCount, buffer, false);
+	captureImg();
+	if (frameCount == 101) {
+		saveZip();
 		noLoop();
 	}
+	buffer.filter(BLUR, 5);
 }
 
 function setGradient(buffer, x, y, w, h, c1, c2, axis = Y_AXIS) {
