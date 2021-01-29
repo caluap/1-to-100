@@ -55,7 +55,7 @@ function getRandomInt(min, max) {
 }
 
 function shuffleAndPrintImage(n, buffer, grid = true) {
-	let swaps = n + 1, //;Math.max(1, Math.ceil(Math.pow(n - 1, 2)));
+	let swaps = n,
 		size = Math.round(width / n);
 
 	if (grid) {
