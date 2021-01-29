@@ -1,6 +1,7 @@
 const Y_AXIS = 1,
 	X_AXIS = 2;
 let c0, c1, buffer, original, img;
+let zoom = 12;
 
 let zip = new JSZip();
 let capturedImg = zip.folder("images");
@@ -13,7 +14,7 @@ function captureImg() {
 			let fn = `${frameCount}`.padStart(3, "0");
 			capturedImg.file(`${fn}.jpg`, blob);
 			console.log(`saved img ${fn}...`);
-			buffer.filter(BLUR, 3 + (frameCount / 100) * 6);
+			buffer.filter(BLUR, 6 + (frameCount / 100) * 6);
 			if (frameCount == 100) {
 				saveZip();
 			} else {
@@ -83,13 +84,10 @@ function shuffleAndPrintImage(n, buffer, grid = true) {
 			} while (coords.some((item) => item.x === x && item.y === y));
 			coords.push({ x, y });
 		}
-		for (let i = 1; i < swaps; i++) {
-			let sx = coords[i - 1].x * size,
-				sy = coords[i - 1].y * size,
-				dx = coords[i].x * size,
-				dy = coords[i].y * size;
-			buffer.image(original, sx, sy, size, size, dx, dy, size, size);
-			buffer.image(original, dx, dy, size, size, sx, sy, size, size);
+		for (let i = 0; i < swaps; i++) {
+			let x = coords[i].x * size,
+				y = coords[i].y * size;
+			buffer.image(original, x, y, size, size, x, y, size, size);
 		}
 	}
 
@@ -97,7 +95,8 @@ function shuffleAndPrintImage(n, buffer, grid = true) {
 }
 
 function draw() {
-	buffer.fill(0, 16);
+	buffer.image(buffer, -zoom, -zoom, width + 2 * zoom, height + 2 * zoom);
+	buffer.fill(0, 8);
 	buffer.rect(0, 0, width, height);
 	shuffleAndPrintImage(frameCount, buffer, false);
 	captureImg();
